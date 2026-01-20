@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sinfode Lead Form</title>
+
+  <!-- ORANGE + WHITE THEME -->
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #ff7a18, #ffb347);
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      background: #ffffff;
+      width: 100%;
+      max-width: 470px;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    h2 {
+      text-align: center;
+      color: #ff7a18;
+      margin-bottom: 25px;
+      font-weight: 700;
+    }
+
+    .input-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #ff7a18;
+      box-shadow: 0 0 0 2px rgba(255,122,24,0.2);
+    }
+
+    button {
+      width: 100%;
+      padding: 13px;
+      background: #ff7a18;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #e86b0f;
+    }
+
+    #message {
+      margin-top: 16px;
+      text-align: center;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h2>Lead Capture Form</h2>
+
+    <form id="leadForm">
+
+      <div class="input-group">
+        <label>Full Name</label>
+        <input type="text" id="full_name" required />
+      </div>
+
+      <div class="input-group">
+        <label>Contact Number</label>
+        <input type="tel" id="contact_number_primary" required />
+      </div>
+
+      <div class="input-group">
+        <label>Email Address</label>
+        <input type="email" id="email_address" required />
+      </div>
+
+      <div class="input-group">
+        <label>Lead Source</label>
+        <select id="lead_source" required>
+          <option value="">Select Source</option>
+          <option value="Website">Website</option>
+          <option value="Facebook">Facebook</option>
+          <option value="Google">Google</option>
+          <option value="Referral">Referral</option>
+        </select>
+      </div>
+
+      <!-- COURSES DROPDOWN -->
+      <div class="input-group">
+        <label>Course</label>
+        <select id="course_id" required>
+          <option value="">Loading courses...</option>
+        </select>
+      </div>
+
+      <button type="submit">Submit Lead</button>
+    </form>
+
+    <p id="message"></p>
+  </div>
+
+  <!-- JS -->
+  <script>
+    const courseSelect = document.getElementById("course_id");
+    const form = document.getElementById("leadForm");
+    const messageBox = document.getElementById("message");
+
+    /* FETCH COURSES (GET METHOD) */
+    async function loadCourses() {
+      try {
+        const response = await fetch("https://crmm.sinfode.com/api/courses/public");
+        const courses = await response.json();
+
+        courseSelect.innerHTML = '<option value="">Select Course</option>';
+
+        courses.forEach(course => {
+          const option = document.createElement("option");
+          option.value = course.id; // course id
+          option.textContent = course.course_name; // course name
+          courseSelect.appendChild(option);
+        });
+
+      } catch (error) {
+        courseSelect.innerHTML = '<option value="">Failed to load courses</option>';
+      }
+    }
+
+    loadCourses();
+
+    /* SUBMIT FORM */
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const payload = {
+        full_name: document.getElementById("full_name").value,
+        contact_number_primary: document.getElementById("contact_number_primary").value,
+        email_address: document.getElementById("email_address").value,
+        lead_source: document.getElementById("lead_source").value,
+        course_id: document.getElementById("course_id").value
+      };
+
+      try {
+        const response = await fetch("API_ENDPOINT_URL", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          messageBox.style.color = "#ff7a18";
+          messageBox.innerText = "✅ Lead submitted successfully";
+          form.reset();
+        } else {
+          messageBox.style.color = "red";
+          messageBox.innerText = "❌ Failed to submit lead";
+        }
+      } catch (error) {
+        messageBox.style.color = "red";
+        messageBox.innerText = "❌ Error: " + error.message;
+      }
+    });
+  </script>
+
+</body>
+</html>
